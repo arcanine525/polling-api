@@ -1,0 +1,2900 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Unified API for authentication, polls, contacts, and file management.",
+        "title": "Polling System API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api/v1",
+    "paths": {
+        "/answers/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a single answer.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Answers"
+                ],
+                "summary": "Get answer by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Answer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.Answer"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes an answer. Admin only.",
+                "tags": [
+                    "Answers"
+                ],
+                "summary": "Delete an answer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Answer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "description": "Authenticates a user with email/password via Firebase Auth, provisions the user if new, and returns the user profile with tokens.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login with email and password",
+                "parameters": [
+                    {
+                        "description": "Login credentials",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/token": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Verifies the Firebase ID token (via middleware), provisions the user if new, and returns the user profile.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Exchange Firebase token for user profile",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.User"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/candidates": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a paginated list of candidates, filtered by poll_id.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Candidates"
+                ],
+                "summary": "Query candidates",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Poll UUID to filter by",
+                        "name": "poll_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number (min: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Items per page (1-100)",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.PaginatedCandidates"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/candidates/{candidateId}/answers": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a paginated list of all answers submitted by a candidate.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Answers"
+                ],
+                "summary": "List answers by a candidate",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Candidate UUID",
+                        "name": "candidateId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number (min: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Items per page (1-100)",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.PaginatedAnswers"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/candidates/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a single candidate.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Candidates"
+                ],
+                "summary": "Get candidate by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Candidate UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.Candidate"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a candidate and its answers. Requires ownership of the parent poll for pollers.",
+                "tags": [
+                    "Candidates"
+                ],
+                "summary": "Delete a candidate",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Candidate UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Partially updates a candidate. Requires ownership of the parent poll for pollers.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Candidates"
+                ],
+                "summary": "Update a candidate",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Candidate UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.CandidateUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.Candidate"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/contacts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a paginated list of contacts, optionally filtered by file_id, poll_id, name, or phone number.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Contacts"
+                ],
+                "summary": "List contacts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number (min: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Items per page (1-100)",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by file UUID",
+                        "name": "file_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by poll UUID",
+                        "name": "poll_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by name (partial match)",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by phone (partial match)",
+                        "name": "phone",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.PaginatedContacts"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates a new contact. Phone normalization is calculated automatically.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Contacts"
+                ],
+                "summary": "Create a contact",
+                "parameters": [
+                    {
+                        "description": "Contact to create",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.ContactCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.Contact"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/contacts/bulk": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates multiple contacts from a list of phone numbers for a specific poll. Duplicates and invalid numbers are skipped and reported.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Contacts"
+                ],
+                "summary": "Bulk create contacts",
+                "parameters": [
+                    {
+                        "description": "Bulk contact creation request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.BulkContactCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.BulkContactResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/contacts/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Permanently removes a contact from the database.",
+                "tags": [
+                    "Contacts"
+                ],
+                "summary": "Delete a contact",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Contact UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates the name and/or phone number of an existing contact. Phone normalization is recalculated automatically.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Contacts"
+                ],
+                "summary": "Update a contact",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Contact UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.ContactUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.Contact"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/files": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a paginated list of uploaded CSV files.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Files"
+                ],
+                "summary": "List uploaded files",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number (min: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Items per page (1-100)",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.PaginatedFiles"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/upload": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Parses the CSV, saves the file to disk, and creates contact records in the database. The uploading user is determined from the auth token.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Upload a CSV file of contacts",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "CSV file to upload (.csv)",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.File"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_contact_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/polls": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a paginated list of polls, optionally filtered by status.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Polls"
+                ],
+                "summary": "List polls",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number (min: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Items per page (1-100)",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by status",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.PaginatedPolls"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates a new poll. Sets created_by from the authenticated user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Polls"
+                ],
+                "summary": "Create a poll",
+                "parameters": [
+                    {
+                        "description": "Poll to create",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.PollCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.Poll"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/polls/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a single poll with its creator.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Polls"
+                ],
+                "summary": "Get poll by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Poll UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.Poll"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a poll and all its candidates, questions, and answers (cascade). Admin only.",
+                "tags": [
+                    "Polls"
+                ],
+                "summary": "Delete a poll",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Poll UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Partially updates a poll. Admins can update any poll; pollers can only update their own.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Polls"
+                ],
+                "summary": "Update a poll",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Poll UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.PollUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.Poll"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/polls/{pollId}/candidates": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a paginated list of candidates for the given poll.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Candidates"
+                ],
+                "summary": "List candidates for a poll",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Poll UUID",
+                        "name": "pollId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number (min: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Items per page (1-100)",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.PaginatedCandidates"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Adds a candidate to a poll. Requires poll ownership for pollers.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Candidates"
+                ],
+                "summary": "Add candidate to poll",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Poll UUID",
+                        "name": "pollId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Candidate to add",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.CandidateCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.Candidate"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/polls/{pollId}/candidates/bulk": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates candidates from a list of phone numbers. Deduplicates and normalizes phones.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Candidates"
+                ],
+                "summary": "Bulk add candidates to a poll",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Poll UUID",
+                        "name": "pollId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Phone numbers to add",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.BulkCandidateCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.BulkCandidateResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/polls/{pollId}/candidates/upload": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Parses a CSV file with a 'phone' column and creates candidates for the poll. Deduplicates and normalizes phones.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Candidates"
+                ],
+                "summary": "Upload CSV to bulk add candidates",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Poll UUID",
+                        "name": "pollId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "CSV file with phone column (.csv)",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.BulkCandidateResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/polls/{pollId}/questions": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a paginated list of questions for the given poll.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Questions"
+                ],
+                "summary": "List questions for a poll",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Poll UUID",
+                        "name": "pollId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number (min: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Items per page (1-100)",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.PaginatedQuestions"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Adds a question to a poll. Requires poll ownership for pollers.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Questions"
+                ],
+                "summary": "Add question to poll",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Poll UUID",
+                        "name": "pollId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Question to add",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.PollQuestionCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.PollQuestion"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/questions/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a single question.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Questions"
+                ],
+                "summary": "Get question by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Question UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.PollQuestion"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a question and its answers. Requires ownership of the parent poll for pollers.",
+                "tags": [
+                    "Questions"
+                ],
+                "summary": "Delete a question",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Question UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Partially updates a question. Requires ownership of the parent poll for pollers.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Questions"
+                ],
+                "summary": "Update a question",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Question UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.PollQuestionUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.PollQuestion"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/questions/{questionId}/answers": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a paginated list of answers for the given question.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Answers"
+                ],
+                "summary": "List answers for a question",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Question UUID",
+                        "name": "questionId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number (min: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Items per page (1-100)",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.PaginatedAnswers"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Submits an answer from a candidate. Each candidate can answer a question only once.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Answers"
+                ],
+                "summary": "Submit answer for a question",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Question UUID",
+                        "name": "questionId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Answer to submit",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.AnswerCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.Answer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_polling_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a paginated list of all users. Admin only.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "List all users",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number (min: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Items per page (1-100)",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.PaginatedUsers"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates a user manually. Admin only.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Create user",
+                "parameters": [
+                    {
+                        "description": "User to create",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.UserCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the authenticated user's profile.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get current user profile",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.User"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates the authenticated user's display name.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update own profile",
+                "parameters": [
+                    {
+                        "description": "Fields to update",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.UserUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a user by database ID. Admin only.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get user by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.User"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a user. Admin only.",
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Delete a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates a user. Admin only.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.UserUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}/role": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates a user's role. Admin only.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update user role",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "New role",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.UserRoleUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/polling-system_auth_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "polling-system_auth_models.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "polling-system_auth_models.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "polling-system_auth_models.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "expires_in": {
+                    "type": "string"
+                },
+                "id_token": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/polling-system_auth_models.User"
+                }
+            }
+        },
+        "polling-system_auth_models.PaginatedUsers": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/polling-system_auth_models.User"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pages": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "polling-system_auth_models.User": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "display_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firebase_uid": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "polling-system_auth_models.UserCreate": {
+            "type": "object",
+            "required": [
+                "email",
+                "firebase_uid"
+            ],
+            "properties": {
+                "display_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firebase_uid": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string",
+                    "enum": [
+                        "admin",
+                        "poller",
+                        "viewer"
+                    ]
+                }
+            }
+        },
+        "polling-system_auth_models.UserRoleUpdate": {
+            "type": "object",
+            "required": [
+                "role"
+            ],
+            "properties": {
+                "role": {
+                    "type": "string",
+                    "enum": [
+                        "admin",
+                        "poller",
+                        "viewer"
+                    ]
+                }
+            }
+        },
+        "polling-system_auth_models.UserUpdate": {
+            "type": "object",
+            "properties": {
+                "display_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "polling-system_contact_models.BulkContactCreate": {
+            "type": "object",
+            "required": [
+                "phone_numbers",
+                "poll_id"
+            ],
+            "properties": {
+                "phone_numbers": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "poll_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "polling-system_contact_models.BulkContactResult": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/polling-system_contact_models.Contact"
+                    }
+                },
+                "duplicate": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "invalid": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "polling-system_contact_models.Contact": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "file_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone_normalized": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "poll_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "polling-system_contact_models.ContactCreate": {
+            "type": "object",
+            "required": [
+                "phone_number"
+            ],
+            "properties": {
+                "file_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "poll_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "polling-system_contact_models.ContactUpdate": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                }
+            }
+        },
+        "polling-system_contact_models.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "something went wrong"
+                }
+            }
+        },
+        "polling-system_contact_models.File": {
+            "type": "object",
+            "properties": {
+                "contacts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/polling-system_contact_models.Contact"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "creator": {
+                    "$ref": "#/definitions/polling-system_auth_models.User"
+                },
+                "file_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "record_count": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "updated_by": {
+                    "type": "string"
+                }
+            }
+        },
+        "polling-system_contact_models.PaginatedContacts": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/polling-system_contact_models.Contact"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pages": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "polling-system_contact_models.PaginatedFiles": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/polling-system_contact_models.File"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pages": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "polling-system_polling_models.Answer": {
+            "type": "object",
+            "properties": {
+                "answer": {
+                    "type": "string"
+                },
+                "candidate": {
+                    "$ref": "#/definitions/polling-system_polling_models.Candidate"
+                },
+                "candidate_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "question": {
+                    "$ref": "#/definitions/polling-system_polling_models.PollQuestion"
+                },
+                "question_id": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                }
+            }
+        },
+        "polling-system_polling_models.AnswerCreate": {
+            "type": "object",
+            "required": [
+                "answer",
+                "candidate_id"
+            ],
+            "properties": {
+                "answer": {
+                    "type": "string"
+                },
+                "candidate_id": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                }
+            }
+        },
+        "polling-system_polling_models.BulkCandidateCreate": {
+            "type": "object",
+            "required": [
+                "phone_numbers"
+            ],
+            "properties": {
+                "phone_numbers": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "polling-system_polling_models.BulkCandidateResult": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "type": "integer"
+                },
+                "duplicates": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "invalid": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "polling-system_polling_models.Candidate": {
+            "type": "object",
+            "properties": {
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/polling-system_polling_models.Answer"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "poll": {
+                    "$ref": "#/definitions/polling-system_polling_models.Poll"
+                },
+                "poll_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "voice_poll_sentiment": {
+                    "type": "string"
+                },
+                "voice_poll_started_at": {
+                    "type": "string"
+                },
+                "voicemail_detected": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "polling-system_polling_models.CandidateCreate": {
+            "type": "object",
+            "required": [
+                "phone"
+            ],
+            "properties": {
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "polling-system_polling_models.CandidateUpdate": {
+            "type": "object",
+            "properties": {
+                "phone": {
+                    "type": "string"
+                },
+                "voice_poll_sentiment": {
+                    "type": "string"
+                },
+                "voice_poll_started_at": {
+                    "type": "string"
+                },
+                "voicemail_detected": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "polling-system_polling_models.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "something went wrong"
+                }
+            }
+        },
+        "polling-system_polling_models.PaginatedAnswers": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/polling-system_polling_models.Answer"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pages": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "polling-system_polling_models.PaginatedCandidates": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/polling-system_polling_models.Candidate"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pages": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "polling-system_polling_models.PaginatedPolls": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/polling-system_polling_models.Poll"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pages": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "polling-system_polling_models.PaginatedQuestions": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/polling-system_polling_models.PollQuestion"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pages": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "polling-system_polling_models.Poll": {
+            "type": "object",
+            "properties": {
+                "bland_pathway_ids": {
+                    "type": "object"
+                },
+                "candidates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/polling-system_polling_models.Candidate"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "creator": {
+                    "$ref": "#/definitions/polling-system_auth_models.User"
+                },
+                "custom_voice_poll_instructions": {
+                    "type": "string"
+                },
+                "dont_send_sms": {
+                    "type": "boolean"
+                },
+                "first_typeform_sms_text": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "only_day_hours": {
+                    "type": "boolean"
+                },
+                "poll_name": {
+                    "type": "string"
+                },
+                "poller_name": {
+                    "type": "string"
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/polling-system_polling_models.PollQuestion"
+                    }
+                },
+                "scheduled_to_start_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "time_zone": {
+                    "type": "string"
+                },
+                "typeform_forms": {
+                    "type": "object"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "voice_poll_delay_minutes": {
+                    "type": "integer"
+                },
+                "voice_poll_method": {
+                    "type": "string"
+                }
+            }
+        },
+        "polling-system_polling_models.PollCreate": {
+            "type": "object",
+            "required": [
+                "poll_name"
+            ],
+            "properties": {
+                "bland_pathway_ids": {
+                    "type": "object"
+                },
+                "custom_voice_poll_instructions": {
+                    "type": "string"
+                },
+                "dont_send_sms": {
+                    "type": "boolean"
+                },
+                "first_typeform_sms_text": {
+                    "type": "string"
+                },
+                "only_day_hours": {
+                    "type": "boolean"
+                },
+                "poll_name": {
+                    "type": "string"
+                },
+                "poller_name": {
+                    "type": "string"
+                },
+                "scheduled_to_start_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "time_zone": {
+                    "type": "string"
+                },
+                "typeform_forms": {
+                    "type": "object"
+                },
+                "voice_poll_delay_minutes": {
+                    "type": "integer"
+                },
+                "voice_poll_method": {
+                    "type": "string"
+                }
+            }
+        },
+        "polling-system_polling_models.PollQuestion": {
+            "type": "object",
+            "properties": {
+                "answer_options": {
+                    "type": "object"
+                },
+                "answer_type": {
+                    "type": "string"
+                },
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/polling-system_polling_models.Answer"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "default_next_question": {
+                    "$ref": "#/definitions/polling-system_polling_models.PollQuestion"
+                },
+                "default_next_question_id": {
+                    "type": "string"
+                },
+                "flow_rules": {
+                    "type": "object"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "poll": {
+                    "$ref": "#/definitions/polling-system_polling_models.Poll"
+                },
+                "poll_id": {
+                    "type": "string"
+                },
+                "question": {
+                    "type": "string"
+                },
+                "randomize_answers": {
+                    "type": "boolean"
+                },
+                "typeform_field_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "polling-system_polling_models.PollQuestionCreate": {
+            "type": "object",
+            "required": [
+                "answer_type",
+                "question"
+            ],
+            "properties": {
+                "answer_options": {
+                    "type": "object"
+                },
+                "answer_type": {
+                    "type": "string"
+                },
+                "default_next_question_id": {
+                    "type": "string"
+                },
+                "flow_rules": {
+                    "type": "object"
+                },
+                "question": {
+                    "type": "string"
+                },
+                "randomize_answers": {
+                    "type": "boolean"
+                },
+                "typeform_field_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "polling-system_polling_models.PollQuestionUpdate": {
+            "type": "object",
+            "properties": {
+                "answer_options": {
+                    "type": "object"
+                },
+                "answer_type": {
+                    "type": "string"
+                },
+                "default_next_question_id": {
+                    "type": "string"
+                },
+                "flow_rules": {
+                    "type": "object"
+                },
+                "question": {
+                    "type": "string"
+                },
+                "randomize_answers": {
+                    "type": "boolean"
+                },
+                "typeform_field_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "polling-system_polling_models.PollUpdate": {
+            "type": "object",
+            "properties": {
+                "bland_pathway_ids": {
+                    "type": "object"
+                },
+                "custom_voice_poll_instructions": {
+                    "type": "string"
+                },
+                "dont_send_sms": {
+                    "type": "boolean"
+                },
+                "first_typeform_sms_text": {
+                    "type": "string"
+                },
+                "only_day_hours": {
+                    "type": "boolean"
+                },
+                "poll_name": {
+                    "type": "string"
+                },
+                "poller_name": {
+                    "type": "string"
+                },
+                "scheduled_to_start_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "time_zone": {
+                    "type": "string"
+                },
+                "typeform_forms": {
+                    "type": "object"
+                },
+                "voice_poll_delay_minutes": {
+                    "type": "integer"
+                },
+                "voice_poll_method": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Enter your token in the format: Bearer {token}",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}
