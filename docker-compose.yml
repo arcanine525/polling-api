@@ -1,0 +1,36 @@
+services:
+  app:
+    build: .
+    ports:
+      - "18080:8080"
+    env_file:
+      - .env
+    volumes:
+      - ./credentials.json:/app/credentials.json:ro
+      - uploads:/app/uploads
+    # depends_on:
+    #   db:
+    #     condition: service_healthy
+    restart: unless-stopped
+
+  # db:
+  #   image: postgres:16-alpine
+  #   ports:
+  #     - "${DB_PORT:-5432}:5432"
+  #   environment:
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=postgres
+  #     - POSTGRES_DB=polling
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
+  #     interval: 5s
+  #     timeout: 3s
+  #     retries: 5
+  #   restart: unless-stopped
+
+volumes:
+  pgdata:
+  uploads:
+

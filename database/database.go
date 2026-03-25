@@ -6,10 +6,6 @@ import (
 
 	"polling-system/config"
 
-	authmodels "polling-system/auth/models"
-	contactmodels "polling-system/contact/models"
-	pollmodels "polling-system/polling/models"
-
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -24,13 +20,13 @@ func Init(cfg *config.Config) {
 	}
 
 	if err := DB.AutoMigrate(
-		&authmodels.User{},
-		&pollmodels.Poll{},
-		&pollmodels.Candidate{},
-		&pollmodels.PollQuestion{},
-		&pollmodels.Answer{},
-		&contactmodels.File{},
-		&contactmodels.Contact{},
+	// &authmodels.User{},
+	// &pollmodels.Poll{},
+	// &pollmodels.Candidate{},
+	// &pollmodels.PollQuestion{},
+	// &pollmodels.Answer{},
+	// &contactmodels.File{},
+	// &contactmodels.Contact{},
 	); err != nil {
 		log.Fatalf("failed to migrate database: %v", err)
 	}
